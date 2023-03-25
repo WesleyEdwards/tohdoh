@@ -18,12 +18,12 @@ import { CreateScheduledEvent } from "./CreateScheduledEvent";
 import CreateUnscheduledEvent from "./CreateUnscheduledEvent";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
-type WhichType = "repeated" | "unscheduled";
+type WhichType = "fixed-time" | "flexible-time";
 
 export const CreateScheduleButton = () => {
   const [open, setOpen] = useState(false);
 
-  const [whichType, setWhichType] = useState<WhichType>("repeated");
+  const [whichType, setWhichType] = useState<WhichType>("fixed-time");
 
   const handleClose = () => {
     setOpen(false);
@@ -40,7 +40,7 @@ export const CreateScheduleButton = () => {
         onClick={() => setOpen(true)}
         startIcon={<AddIcon />}
       >
-        Add Schedule
+        Event
       </Button>
 
       <Dialog open={open} onClose={handleClose} fullWidth>
@@ -49,32 +49,32 @@ export const CreateScheduleButton = () => {
           <Stack gap="2rem">
             <Stack direction="row" alignItems="center" gap="1rem">
               <FormControl sx={{ my: "2rem" }} fullWidth>
-                <InputLabel>Schedule Type</InputLabel>
+                <InputLabel>Event Type</InputLabel>
                 <Select
                   fullWidth
                   value={whichType}
-                  label="Schedule Type"
+                  label="Event Type"
                   onChange={(e) => setWhichType(e.target.value as WhichType)}
                 >
-                  <MenuItem value={"repeated"}>Repeated</MenuItem>
-                  <MenuItem value={"unscheduled"}>Unscheduled</MenuItem>
+                  <MenuItem value={"fixed-time"}>Fixed Time</MenuItem>
+                  <MenuItem value={"flexible-time"}>Flexible Time</MenuItem>
                 </Select>
               </FormControl>
               <Tooltip
                 children={<InfoOutlinedIcon fontSize="large" />}
                 title={
-                  whichType === "repeated"
-                    ? "Repeated events happen on the same day at the same time. e.g. someone's birthday, a weekly meeting, or picking up Grandma."
-                    : "Unscheduled events do not have to happen on same day or time. e.g. cleaning the house or going to the gym."
+                  whichType === "fixed-time"
+                    ? "Needs to happen at a specific time. (e.g. someone's birthday, a weekly meeting, or picking up Grandma)"
+                    : "Does not have to happen at a specified time (e.g. cleaning the house or going to the gym)"
                 }
               />
             </Stack>
 
             <Divider />
 
-            {whichType === "repeated" ? (
+            {whichType === "fixed-time" ? (
               <CreateScheduledEvent onCreate={handleCreate} />
-            ) : whichType === "unscheduled" ? (
+            ) : whichType === "flexible-time" ? (
               <CreateUnscheduledEvent onCreate={handleCreate} />
             ) : null}
           </Stack>

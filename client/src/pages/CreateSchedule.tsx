@@ -1,4 +1,4 @@
-import { Button, Container, Stack, Typography } from "@mui/material";
+import { Button, Container, Divider, Stack, Typography } from "@mui/material";
 import { HeaderTitle } from "../components/HeaderTitle";
 import { CreateScheduleButton } from "../components/CreateScheduleButton";
 import { CreateDueDateEvent } from "../components/CreateDueDateEvent";
@@ -11,8 +11,8 @@ export const CreateSchedule = () => {
       <HeaderTitle title="Schedules" secondary>
         <CreateScheduleButton />
       </HeaderTitle>
-
-      <HeaderTitle title="Events" secondary>
+      <Divider sx={{ pt: "2rem" }} />
+      <HeaderTitle title="Deadlines" secondary>
         <CreateDueDateEvent />
       </HeaderTitle>
     </Container>
