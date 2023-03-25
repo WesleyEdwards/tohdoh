@@ -3,7 +3,7 @@ import { RequestHandler } from "express";
 import { RequestWithJWTBody } from "../dto/jwt";
 import { build_controller } from "../lib/controller_builder";
 import { scheduledEventScheduler } from "../scheduler/scheduler";
-import { generateICal } from "../scheduler/calendar";
+import { generateICal, eventWithBase } from "../scheduler/calendar";
 
 type conflicts = {
   a: any,
@@ -12,9 +12,8 @@ type conflicts = {
 const getSchedule =
   (client: PrismaClient): RequestHandler =>
   async (req: RequestWithJWTBody, res) => {
-    let scheduleICal: string = generateICal();
     // Get All schedulers
-    const unscheduledEventSchedulers = await client.unscheduledEventScheduler.findMany({
+    var unscheduledEventSchedulers = await client.unscheduledEventScheduler.findMany({
       where: {
         userId: req.jwtBody!!.userId
       },
@@ -44,13 +43,22 @@ const getSchedule =
     });
 
     // Mark All Future Planned Events as Deleted
-    const deletedEvents = await client.event.deleteMany({
+    const deletedEvents = await client.event.findMany({
+      where:{
+        start: {gte: new Date()}
+      },
+      include: {
+        scheduler:true
+      }
+    });
+    const _ = await client.event.deleteMany({
       where: {
         start: {gte: new Date()}
       }
     });
+    
     var conflicts:conflicts[] = [];
-    var newEvents:Event[] = [];
+    var newEvents:eventWithBase[] = [];
     var schedulePointer = new Date();
     var endPoint = new Date(schedulePointer.valueOf());
     endPoint.setDate(endPoint.getDate() + parseInt(req.params.days));
@@ -167,6 +175,9 @@ const getSchedule =
           complete:false,
           deleted:false,
           kind:"DUE_DATE"
+        },
+        include: {
+          scheduler: true,
         }
       });
       newEvents.push(event);
@@ -202,30 +213,53 @@ const getSchedule =
 
     // Schedule Unscheduled
     var unscheduledSchedulePointer =  new Date(schedulePointer.valueOf());
-    while(unscheduledEventSchedulers.length > 0) {
-      const currentEvent = unscheduledEventSchedulers.pop();
-      if (currentEvent!!.base?.doneScheduling) {
+    let tempEvents = []
+    while(unscheduledEventSchedulers.length > 0 || tempEvents.length > 0) {
+      let currentUnscheduledEvent = unscheduledEventSchedulers.pop();
+      if (currentUnscheduledEvent!!.base?.doneScheduling) {
         continue;
       }
 
-      if (currentEvent?.base.lastScheduled == unscheduledSchedulePointer) {
-        var nextUS = unscheduledEventSchedulers.pop()
-        unscheduledEventSchedulers
+      let nextTimeToSchedule = new Date(currentEvent!!.base.lastScheduled.valueOf())
+      if (currentUnscheduledEvent?.repeatInfo.repeatType == 'WEEKLY') {
+        nextTimeToSchedule.setDate(nextTimeToSchedule.getDate() + (7 / currentUnscheduledEvent.repeatInfo.days.split(',').length))
+      } else if (currentUnscheduledEvent?.repeatInfo.repeatType == 'MONTHLY') {
+        nextTimeToSchedule.setDate(nextTimeToSchedule.getDate() + (30 / currentUnscheduledEvent.repeatInfo.days.split(',').length))
+      } else if (currentUnscheduledEvent?.repeatInfo.repeatType == 'YEARLY') {
+        nextTimeToSchedule.setDate(nextTimeToSchedule.getDate() + (365 / currentUnscheduledEvent.repeatInfo.days.split(',').length))
       }
 
-      const timeFromDuration = unscheduledSchedulePointer.getMinutes() + nextEvent?.base?.duration 
-      const conflict : Event | null = await wouldConflict(client, unscheduledSchedulePointer, timeFromDuration)
-      if (conflict) {
-        conflicts.push({a: nextEvent, b: conflict})
+      if (unscheduledSchedulePointer < nextTimeToSchedule) {
+        if (unscheduledEventSchedulers.length > 0) {
+          let nextEvent = unscheduledEventSchedulers.pop();
+          unscheduledEventSchedulers.push(currentUnscheduledEvent!!);
+          currentUnscheduledEvent = nextEvent;
+        }
+
       }
+
+      const endTime = new Date(unscheduledSchedulePointer.valueOf())
+      endTime.setMinutes(endTime.getMinutes() + currentUnscheduledEvent!!.base!!.duration);
+      const conflict : Event | null = await wouldConflict(client, unscheduledSchedulePointer, endTime)
+
+      if (conflict) {
+        unscheduledSchedulePointer.setTime(conflict!!.end.getTime())
+        tempEvents.push(currentUnscheduledEvent!!);
+        if (unscheduledEventSchedulers.length == 0) {
+          unscheduledEventSchedulers = [...tempEvents];
+          tempEvents = [];
+          unscheduledSchedulePointer.setTime(conflict!!.end.getTime());
+        }
+        continue;
+      } 
 
       const newEvent = await client.event.create({
         data: {
-          start: nextUp!!.startDateTime,
-          end: nextUp!!.endDateTime,
-          userId: nextUp!!.userId,
-          schedulerId: nextUp!!.id,
-          kind: "FIXED_TIME",
+          start: unscheduledSchedulePointer,
+          end: endTime,
+          userId: currentEvent!!.userId,
+          schedulerId: currentEvent!!.id,
+          kind: "FLEXIBLE_TIME",
           complete: false,
           deleted: false
         },
@@ -233,23 +267,12 @@ const getSchedule =
           scheduler:true
         }
       });
-      // handle repeat, once a month, once a year, once every six months
-      // look at the length of the repeat info
-      // duration is in minutes
-      // go off duration rather than start or end time
-      var doneScheduling = false;
-      if (currentEvent!!.repeatInfo.days.split(',').length < 1) {
-        doneScheduling = true;
-      }
-      else if (currentEvent!!.repeatInfo.repeatType === "WEEKLY") {
-        currentEvent!!.base.lastScheduled = 
-      }
-      else if (currentEvent!!.repeatInfo.repeatType === "MONTHLY") {
 
-      } else {
+      newEvents.push(newEvent);
 
-      }
-
+      unscheduledEventSchedulers = [...unscheduledEventSchedulers, ...tempEvents];
+      currentEvent?.base.lastScheduled.setTime(unscheduledSchedulePointer.getTime());
+      unscheduledSchedulePointer.setTime(newEvent.end.getTime());
     }
 
 
@@ -257,9 +280,8 @@ const getSchedule =
       "Content-Disposition": 'attachment; filename="newEvents.ics"',
       "Content-type": "text/calendar",
     });
-    let eventsWithBase = "";
-    let deletedEventsWithBase = "";
-    res.send(generateICal(eventsWithBase, deletedEventsWithBase));
+    
+    res.send(generateICal(newEvents, deletedEvents));
   };
 
 const wouldConflict = async (client:PrismaClient, start:Date, end:Date):Promise<Event|null> => {
