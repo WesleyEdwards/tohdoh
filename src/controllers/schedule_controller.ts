@@ -135,8 +135,67 @@ const getSchedule =
       } 
     }
     // Schedule Due Dates
-    while(dueDateEventSchedulers.length > 0) {
-      
+    var mySchedulePointer = new Date(schedulePointer.valueOf());
+    dueDateEventSchedulers.sort((a:DueDateEventScheduler, b:DueDateEventScheduler)=> {return a.dueDateTime < b.dueDateTime ? -1:1})
+    while(dueDateEventSchedulers.length > 0 && mySchedulePointer < endPoint) {
+      var currentEvent = dueDateEventSchedulers.pop();
+      if (currentEvent!!.base.doneScheduling) {
+        continue;
+      }
+      if (currentEvent?.base.lastScheduled == mySchedulePointer) {
+        var nextEvent = dueDateEventSchedulers.pop()
+        dueDateEventSchedulers.push(currentEvent);
+        currentEvent = nextEvent;
+      }
+      var instanceEndTime=new Date(mySchedulePointer.valueOf())
+      instanceEndTime.setMinutes(instanceEndTime.getMinutes() + currentEvent!!.blockSize);
+      const conflict = await wouldConflict(client, mySchedulePointer, instanceEndTime)
+      if (conflict && mySchedulePointer < conflict.start) {
+        instanceEndTime = conflict.start;
+      } else {
+        mySchedulePointer.setTime(conflict!!.end.getTime())
+        dueDateEventSchedulers.push(currentEvent!!);
+        continue;
+      }
+      client.event.create({
+        data:{
+          start:mySchedulePointer,
+          end: instanceEndTime,
+          userId:currentEvent!!.userId,
+          schedulerId:currentEvent!!.id,
+          complete:false,
+          deleted:false,
+          kind:"DUE_DATE"
+        }
+      })
+      var doneScheduling = false
+      // Check to see if we finished scheduling
+      currentEvent!.amountScheduled += (instanceEndTime.getTime() - schedulePointer.getTime())/(60000)
+      if (currentEvent!.amountScheduled >= currentEvent!.base.duration) {
+        doneScheduling = true
+      }
+
+      mySchedulePointer.setTime(instanceEndTime.getTime())
+      currentEvent!.base.lastScheduled.setTime(mySchedulePointer.getTime());
+      if (mySchedulePointer < endPoint || doneScheduling) {
+        client.dueDateEventScheduler.update({
+          where: {
+            id: currentEvent!!.id
+          },
+          data: {
+            amountScheduled: currentEvent!!.amountScheduled,            
+          }
+        })
+        client.eventSchedulerBase.update({
+          where: {
+            id: currentEvent!!.baseId
+          },
+          data: {
+            lastScheduled:currentEvent!!.base.lastScheduled,
+            doneScheduling
+          }
+        })
+      }
     }
 
     // Schedule Unscheduled
