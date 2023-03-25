@@ -43,5 +43,5 @@ export const generateICal = (eventsWithBase: eventWithBase[], deletedEventsWithB
             summary: event.scheduler.name
         });
     });
-    return JSON.stringify(calendar);
+    return calendar.toString();
 }

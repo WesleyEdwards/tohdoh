@@ -2,7 +2,6 @@ import { DueDateEventScheduler, Event, PrismaClient, UnscheduledEventScheduler }
 import { RequestHandler } from "express";
 import { RequestWithJWTBody } from "../dto/jwt";
 import { build_controller } from "../lib/controller_builder";
-import { scheduledEventScheduler } from "../scheduler/scheduler";
 import { generateICal, eventWithBase } from "../scheduler/calendar";
 
 type conflicts = {
@@ -61,7 +60,7 @@ const getSchedule =
     var newEvents:eventWithBase[] = [];
     var schedulePointer = new Date();
     var endPoint = new Date(schedulePointer.valueOf());
-    endPoint.setDate(endPoint.getDate() + parseInt(req.params.days));
+    endPoint.setTime(endPoint.getTime() + 1000*60*60*24*parseInt(req.params.days));
     // Schedule Scheduled Events
     var eventQueue = [...scheduledEventSchedulers]
     while (eventQueue.length > 0 && schedulePointer <= endPoint) {
@@ -70,7 +69,8 @@ const getSchedule =
         continue;
       }
 
-      console.log("I'm calling from fixed date")
+      console.log("I'm calling from fixed date");
+      console.log(nextUp);
       const conflict:Event|null = await wouldConflict(client, nextUp!!.startDateTime, nextUp!!.endDateTime)
       if (conflict) {
         conflicts.push({a:nextUp, b:conflict})
@@ -92,22 +92,27 @@ const getSchedule =
       newEvents.push(newEvent);
       // Handle Repeat
       var doneScheduling = false;
-      if  (nextUp!!.repeatInfo.days.split(',').length < 1) {
+      if  (nextUp!!.repeatInfo.days.split(',').filter(e=>e!=='').length < 1) {
           doneScheduling = true;
       }
       else if (nextUp!!.repeatInfo.repeatType === "WEEKLY") {
-        nextUp!!.base.lastScheduled = nextUp!!.startDateTime;
-        const repeatArr = nextUp!!.repeatInfo.days.split(',')
+        nextUp!!.base.lastScheduled.setTime(nextUp!!.startDateTime.getTime());
+        var repeatArr = nextUp!!.repeatInfo.days.split(',');
+        repeatArr = repeatArr.filter(e=>e!=='');
         const oldIndex = repeatArr.indexOf(nextUp!!.base.lastScheduled.getDay().toString())
         const nextIndex = (oldIndex + 1) % repeatArr.length;
         let dayDiff = 0;
+        console.log(repeatArr)
         if (nextIndex == 0) {
           dayDiff = 7 - parseInt(repeatArr[oldIndex]) + parseInt(repeatArr[nextIndex]);
         } else {
           dayDiff = parseInt(repeatArr[nextIndex]) - parseInt(repeatArr[oldIndex])
         }
-        nextUp!!.startDateTime.setDate(nextUp!!.startDateTime.getDate()+dayDiff);
-        nextUp!!.endDateTime.setDate(nextUp!!.endDateTime.getDate()+dayDiff);
+        console.log("dayDiff:"+dayDiff)
+        console.log(nextUp!!.startDateTime);
+        nextUp!!.startDateTime.setTime(nextUp!!.startDateTime.getTime()+1000*60*60*24*dayDiff);
+        console.log(nextUp!!.startDateTime);
+        nextUp!!.endDateTime.setTime(nextUp!!.endDateTime.getTime()+1000*60*60*24*dayDiff);
         eventQueue.push(nextUp!!);
       }
       else if (nextUp!!.repeatInfo.repeatType === "MONTHLY") {
@@ -164,7 +169,7 @@ const getSchedule =
       const conflict = await wouldConflict(client, mySchedulePointer, instanceEndTime)
       if (conflict && mySchedulePointer < conflict.start) {
         instanceEndTime = conflict.start;
-      } else {
+      } else if(conflict) {
         mySchedulePointer.setTime(conflict!!.end.getTime())
         dueDateEventSchedulers.push(currentEvent!!);
         continue;
@@ -225,11 +230,11 @@ const getSchedule =
 
       let nextTimeToSchedule = new Date(currentEvent!!.base.lastScheduled.valueOf())
       if (currentUnscheduledEvent?.repeatInfo.repeatType == 'WEEKLY') {
-        nextTimeToSchedule.setDate(nextTimeToSchedule.getDate() + (7 / currentUnscheduledEvent.repeatInfo.days.split(',').length))
+        nextTimeToSchedule.setTime(nextTimeToSchedule.getTime() + 1000*60*60*24*(7 / currentUnscheduledEvent.repeatInfo.days.split(',').length))
       } else if (currentUnscheduledEvent?.repeatInfo.repeatType == 'MONTHLY') {
-        nextTimeToSchedule.setDate(nextTimeToSchedule.getDate() + (30 / currentUnscheduledEvent.repeatInfo.days.split(',').length))
+        nextTimeToSchedule.setTime(nextTimeToSchedule.getTime() + 1000*60*60*24*(30 / currentUnscheduledEvent.repeatInfo.days.split(',').length))
       } else if (currentUnscheduledEvent?.repeatInfo.repeatType == 'YEARLY') {
-        nextTimeToSchedule.setDate(nextTimeToSchedule.getDate() + (365 / currentUnscheduledEvent.repeatInfo.days.split(',').length))
+        nextTimeToSchedule.setTime(nextTimeToSchedule.getTime() + 1000*60*60*24*(365 / currentUnscheduledEvent.repeatInfo.days.split(',').length))
       }
 
       if (unscheduledSchedulePointer < nextTimeToSchedule) {
@@ -319,7 +324,7 @@ const getEvents =
     today.setMinutes(0);
     today.setSeconds(0);
     const nextWeek = new Date(today.valueOf());
-    nextWeek.setDate(today.getDate() + 7);
+    nextWeek.setTime(today.getTime() + 1000*60*60*24*7);
     const events = client.event.findMany({
       where: {
         userId: req.jwtBody!!.userId,
@@ -330,7 +335,7 @@ const getEvents =
         scheduler: true,
       },
     });
-    res.send(events);
+    res.json({"blob":events});
   };
 
 export const scheduleController = build_controller("schedules", [
