@@ -23,5 +23,5 @@ export const build_controller = (name:string, routes:Route[]) => (app: Express, 
         }
         router[route.method](route.path, route.endpointBuilder(client));
     });
-    app.use(`/${name}`, router);
+    app.use(`/api/${name}`, router);
 }

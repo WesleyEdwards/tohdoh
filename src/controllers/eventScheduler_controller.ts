@@ -350,5 +350,8 @@ const deleteDueDateEventScheduler = (client: PrismaClient): RequestHandler =>
             {path: "/unscheduledEventScheduler/:id", method: "delete", endpointBuilder: deleteUnscheduledEventScheduler},
             {path: "/scheduledEventScheduler/:id", method: "delete", endpointBuilder: deleteScheduledEventScheduler},
             {path: "/dueDateEventScheduler/:id", method: "delete", endpointBuilder: deleteDueDateEventScheduler},
+            {path: "/unscheduledEventScheduler/:id", method: "put", endpointBuilder: updateUnscheduledEventScheduler},
+            {path: "/scheduledEventScheduler/:id", method: "put", endpointBuilder: updateScheduledEventScheduler},
+            {path: "/dueDateEventScheduler/:id", method: "put", endpointBuilder: updateDueDateEventScheduler},
         ]
       )
