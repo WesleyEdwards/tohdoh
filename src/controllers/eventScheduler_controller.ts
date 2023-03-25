@@ -173,8 +173,8 @@ const deleteUnscheduledEventScheduler = (client: PrismaClient): RequestHandler =
 type createScheduledEventSchedulerBody = {
         repeatInfo: createRepeatInfoBody,
         baseInfo: createEventSchedulerBaseBody,
-        startDateTime: Date,
-        endDateTime: Date
+        startDateTime: string,
+        endDateTime: string
         }
 const createScheduledEventScheduler = (client: PrismaClient): RequestHandler =>
     async (req:RequestWithJWTBody, res) => {
@@ -187,8 +187,8 @@ const createScheduledEventScheduler = (client: PrismaClient): RequestHandler =>
                 baseId,
                 repeatId,
                 userId:req.jwtBody!!.userId,
-                endDateTime,
-                startDateTime,
+                endDateTime: new Date(endDateTime),
+                startDateTime: new Date(startDateTime),
               }
             });
             res.json({scheduledEventScheduler});
@@ -218,8 +218,8 @@ const updateScheduledEventScheduler = (client: PrismaClient): RequestHandler =>
                     id:oldES.id
                 },
                 data: {
-                    startDateTime,
-                    endDateTime,
+                    startDateTime: new Date(startDateTime),
+                    endDateTime: new Date(endDateTime),
                 }
             });
             res.json({dueDateEventScheduler: scheduledEventScheduler});
@@ -260,7 +260,7 @@ const deleteScheduledEventScheduler = (client: PrismaClient): RequestHandler =>
       }
 type createDueDateEventSchedulerBody = {
         baseInfo: createEventSchedulerBaseBody,
-        dueDateTime: Date,
+        dueDateTime: string,
         blockSize: number,
         }
 const createDueDateEventScheduler = (client: PrismaClient): RequestHandler =>
@@ -272,7 +272,7 @@ const createDueDateEventScheduler = (client: PrismaClient): RequestHandler =>
               data: {
                 baseId,
                 userId:req.jwtBody!!.userId,
-                dueDateTime,
+                dueDateTime: new Date(dueDateTime),
                 blockSize,
                 amountScheduled:0
               }
@@ -303,7 +303,7 @@ const updateDueDateEventScheduler = (client: PrismaClient): RequestHandler =>
                     id:oldES.id
                 },
                 data: {
-                    dueDateTime,
+                    dueDateTime: new Date(dueDateTime),
                     blockSize,
                 }
             });
