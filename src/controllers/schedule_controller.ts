@@ -12,7 +12,6 @@ type conflicts = {
 const getSchedule =
   (client: PrismaClient): RequestHandler =>
   async (req: RequestWithJWTBody, res) => {
-    let scheduleICal: string = generateICal();
     // Get All schedulers
     var unscheduledEventSchedulers = await client.unscheduledEventScheduler.findMany({
       where: {
@@ -44,11 +43,20 @@ const getSchedule =
     });
 
     // Mark All Future Planned Events as Deleted
-    const deletedEvents = await client.event.deleteMany({
+    const deletedEvents = await client.event.findMany({
+      where:{
+        start: {gte: new Date()}
+      },
+      include: {
+        scheduler:true
+      }
+    });
+    const _ = await client.event.deleteMany({
       where: {
         start: {gte: new Date()}
       }
     });
+    
     var conflicts:conflicts[] = [];
     var newEvents:eventWithBase[] = [];
     var schedulePointer = new Date();
@@ -167,6 +175,9 @@ const getSchedule =
           complete:false,
           deleted:false,
           kind:"DUE_DATE"
+        },
+        include: {
+          scheduler: true,
         }
       });
       newEvents.push(event);
@@ -256,6 +267,8 @@ const getSchedule =
           scheduler:true
         }
       });
+
+      newEvents.push(newEvent);
 
       unscheduledEventSchedulers = [...unscheduledEventSchedulers, ...tempEvents];
       currentEvent?.base.lastScheduled.setTime(unscheduledSchedulePointer.getTime());
