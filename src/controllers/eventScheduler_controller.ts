@@ -87,6 +87,36 @@ const createUnscheduledEventScheduler = (client: PrismaClient): RequestHandler =
         }
 
       }
+const deleteUnscheduledEventScheduler = (client: PrismaClient): RequestHandler =>
+      async (req:RequestWithJWTBody, res) => {
+        const scheduledEventScheduler = await client.scheduledEventScheduler.findFirst({
+            where: {
+                userId: req.jwtBody?.userId,
+                id: parseInt(req.params.id)
+            }
+        });
+
+        if (!scheduledEventScheduler) {
+            res.status(404).json({message:"ScheduledScheduler Not found"})
+        } else {
+            client.eventSchedulerBase.delete({
+                where:{
+                    id:scheduledEventScheduler.baseId
+                }
+            });
+            client.repeatInfo.delete({
+                where:{
+                    id:scheduledEventScheduler.repeatId
+                }
+            })
+            client.dueDateEventScheduler.delete({
+                where:{
+                    id:scheduledEventScheduler.id
+                }
+            })
+            res.json({message:"Deleted Successfully.", scheduledEventScheduler})
+        }
+      }
 type createScheduledEventSchedulerBody = {
         repeatInfo: createRepeatInfoBody,
         baseInfo: createEventSchedulerBaseBody,
@@ -114,6 +144,36 @@ const createScheduledEventScheduler = (client: PrismaClient): RequestHandler =>
             res.json({unscheduledEventScheduler:null, error:"Cannot create EventScheduler."})
         }
       }
+const deleteScheduledEventScheduler = (client: PrismaClient): RequestHandler =>
+      async (req:RequestWithJWTBody, res) => {
+        const scheduledEventScheduler = await client.scheduledEventScheduler.findFirst({
+            where: {
+                userId: req.jwtBody?.userId,
+                id: parseInt(req.params.id)
+            }
+        });
+
+        if (!scheduledEventScheduler) {
+            res.status(404).json({message:"ScheduledScheduler Not found"})
+        } else {
+            client.eventSchedulerBase.delete({
+                where:{
+                    id:scheduledEventScheduler.baseId
+                }
+            });
+            client.repeatInfo.delete({
+                where:{
+                    id:scheduledEventScheduler.repeatId
+                }
+            })
+            client.dueDateEventScheduler.delete({
+                where:{
+                    id:scheduledEventScheduler.id
+                }
+            })
+            res.json({message:"Deleted Successfully.", scheduledEventScheduler})
+        }
+      }
 type createDueDateEventSchedulerBody = {
         baseInfo: createEventSchedulerBaseBody,
         dueDateTime: Date,
@@ -139,6 +199,32 @@ const createDueDateEventScheduler = (client: PrismaClient): RequestHandler =>
             res.json({unscheduledEventScheduler:null, error:"Cannot create EventScheduler."})
         }
       }
+const deleteDueDateEventScheduler = (client: PrismaClient): RequestHandler =>
+      async (req:RequestWithJWTBody, res) => {
+        const dueDateEventScheduler = await client.dueDateEventScheduler.findFirst({
+            where: {
+                userId: req.jwtBody?.userId,
+                id: parseInt(req.params.id)
+            }
+        });
+
+        if (!dueDateEventScheduler) {
+            res.status(404).json({message:"DueDateScheduler Not found"})
+        } else {
+            client.eventSchedulerBase.delete({
+                where:{
+                    id:dueDateEventScheduler.baseId
+                }
+            });
+            client.dueDateEventScheduler.delete({
+                where:{
+                    id:dueDateEventScheduler.id
+                }
+            })
+            res.json({message:"Deleted Successfully.", dueDateEventScheduler})
+        }
+      }
+
 
       export const eventSchedulerController = build_controller(
         "users",
@@ -146,6 +232,9 @@ const createDueDateEventScheduler = (client: PrismaClient): RequestHandler =>
             {path: "/me", endpointBuilder:getMine, method: "get"},
             {path: "/unscheduledEventScheduler", method: "post", endpointBuilder: createUnscheduledEventScheduler},
             {path: "/scheduledEventScheduler", method: "post", endpointBuilder: createScheduledEventScheduler},
-            {path: "/dueDateEventScheduler", method: "post", endpointBuilder: createDueDateEventScheduler}
+            {path: "/dueDateEventScheduler", method: "post", endpointBuilder: createDueDateEventScheduler},
+            {path: "/unscheduledEventScheduler/:id", method: "delete", endpointBuilder: deleteUnscheduledEventScheduler},
+            {path: "/scheduledEventScheduler/:id", method: "delete", endpointBuilder: deleteScheduledEventScheduler},
+            {path: "/dueDateEventScheduler/:id", method: "delete", endpointBuilder: deleteDueDateEventScheduler},
         ]
       )
