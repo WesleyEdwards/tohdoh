@@ -8,45 +8,52 @@ import { build_controller } from "../lib/controller_builder";
 const getMine =
   (client: PrismaClient): RequestHandler =>
   async (req: RequestWithJWTBody, res) => {
-    const unscheduledEventSchedulers =
+    const rawUnscheduledEventSchedulers =
       await client.unscheduledEventScheduler.findMany({
         where: {
           userId: req.jwtBody?.userId,
         },
       });
-    const scheduledEventSchedulers =
+    const unscheduledEventSchedulers = await Promise.all(rawUnscheduledEventSchedulers.map(async es => {
+      const repeat = await client.repeatInfo.findFirst({where: {id:es.repeatId}});
+      const base = await client.eventSchedulerBase.findFirst({where: {id:es.baseId}});
+      return {id: es.id, repeat, base, userId: es.userId}
+    }))
+    const rawScheduledEventSchedulers =
       await client.scheduledEventScheduler.findMany({
         where: {
           userId: req.jwtBody?.userId,
         },
       });
-    const dueDateEventSchedulers = await client.dueDateEventScheduler.findMany({
+    const scheduledEventSchedulers = await Promise.all(rawScheduledEventSchedulers.map(async es => {
+        const repeat = await client.repeatInfo.findFirst({where: {id:es.repeatId}});
+        const base = await client.eventSchedulerBase.findFirst({where: {id:es.baseId}});
+        return {id: es.id, repeat, base, userId: es.userId, startDateTime:es.startDateTime, endDateTime:es.endDateTime}
+      }))
+    const rawDueDateEventSchedulers = await client.dueDateEventScheduler.findMany({
       where: {
         userId: req.jwtBody?.userId,
       },
     });
+    const dueDateEventSchedulers = await Promise.all(rawDueDateEventSchedulers.map(async es => {
+      const base = await client.eventSchedulerBase.findFirst({where: {id:es.baseId}});
+      return {id: es.id, base, userId: es.userId, dueDateTime:es.dueDateTime, blockSize:es.blockSize, amountScheduled:es.amountScheduled}
+    }))
     res.json({
       unscheduledEventSchedulers,
       scheduledEventSchedulers,
       dueDateEventSchedulers,
     });
   };
-type createEventSchedulerBaseBody = {
-  name: string;
-  latX: number;
-  latY: number;
-  duration: number;
-  priority: number;
-};
-type createRepeatInfoBody = {
-  repeatType: "WEEKLY" | "MONTHLY" | "YEARLY";
-  days: number[];
-};
-const createRepeatInfo = async (
-  info: createRepeatInfoBody,
-  client: PrismaClient
-): Promise<number> => {
-  const { repeatType, days } = info;
+  type createRepeatInfoBody = {
+    repeatType: "WEEKLY" | "MONTHLY" | "YEARLY";
+    days: number[];
+  };
+  const createRepeatInfo = async (
+    info: createRepeatInfoBody,
+    client: PrismaClient
+    ): Promise<number> => {
+      const { repeatType, days } = info;
   const daysString = days.join(",");
   const newRepeatInfo = await client.repeatInfo.create({
     data: {
@@ -60,8 +67,8 @@ const updateRepeatInfo = async (
   id: number,
   info: createRepeatInfoBody,
   client: PrismaClient
-): Promise<number> => {
-  const { repeatType, days } = info;
+  ): Promise<number> => {
+    const { repeatType, days } = info;
   const daysString = days.join(",");
   const newRepeatInfo = await client.repeatInfo.update({
     where: {
@@ -79,11 +86,19 @@ type createUnscheduledEventSchedulerBody = {
   baseInfo: createEventSchedulerBaseBody;
 };
 
+type createEventSchedulerBaseBody = {
+  name: string;
+  latX: number;
+  latY: number;
+  duration: number;
+  priority: number;
+};
+
 const createEventSchedulerBase = async (
   base: createEventSchedulerBaseBody,
   client: PrismaClient
-): Promise<number> => {
-  const { name, latX, latY, duration, priority } = base;
+  ): Promise<number> => {
+    const { name, latX, latY, duration, priority } = base;
   const newBase = await client.eventSchedulerBase.create({
     data: {
       name,
