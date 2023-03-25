@@ -3,8 +3,8 @@ import dotenv from "dotenv";
 import express from "express";
 import path from "path";
 import { engine } from "express-handlebars";
-import { tokenController } from "./controllers/controllers/token_controller";
-import { usersController } from "./controllers/controllers/user_controller";
+import { tokenController } from "./controllers/token_controller";
+import { usersController } from "./controllers/user_controller";
 
 dotenv.config();
 const client = new PrismaClient();

@@ -2,7 +2,7 @@ import { Express, RequestHandler } from "express";
 import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import { build_controller } from "../../lib/controller_builder";
+import { build_controller } from "../lib/controller_builder";
 
 type LoginBody = {
     email: string,
