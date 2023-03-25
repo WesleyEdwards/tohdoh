@@ -86,6 +86,7 @@ model Event {
   scheduler   EventSchedulerBase @relation(fields: [schedulerId], references: [id])
   kind        String
   complete    Boolean
+  deleted     Boolean
 }
 
 model ActiveHours {

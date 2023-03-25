@@ -45,6 +45,7 @@ export type Event = {
   schedulerId: number;
   kind: string;
   complete: Boolean;
+  deleted: Boolean;
 };
 
 export type EventSchedulerBase = {
