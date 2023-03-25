@@ -12,11 +12,11 @@ type RoutePath =
   | "create-account"
   | "dashboard"
   | "profile"
-  | "create-schedule";
+  | "schedules";
 
 export const authRoutes: RoutePath[] = [
   "dashboard",
-  "create-schedule",
+  "schedules",
   "profile",
 ];
 
@@ -32,7 +32,7 @@ export const routeMap: Record<RoutePath, JSX.Element> = {
   "create-account": <CreateAccount />,
   dashboard: <Landing />,
   profile: <Profile />,
-  "create-schedule": <CreateSchedule />,
+  "schedules": <CreateSchedule />,
 };
 
 export const authRouter = createBrowserRouter([

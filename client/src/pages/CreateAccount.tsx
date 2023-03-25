@@ -49,9 +49,10 @@ export const CreateAccount: FC = () => {
 
   const makeTextFieldProps = (
     value: string,
+    name: string,
     setValue: (newValue: string) => void
   ) => ({
-    label: camelToTitleCase(value),
+    label: camelToTitleCase(name),
     value,
     onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
       setValue(e.target.value),
@@ -75,11 +76,15 @@ export const CreateAccount: FC = () => {
                 Create Your Account
               </Typography>
             </Stack>
-            <TextField {...makeTextFieldProps(firstName, setFirstName)} />
-            <TextField {...makeTextFieldProps(lastName, setLastName)} />
-            <TextField {...makeTextFieldProps(email, setEmail)} />
             <TextField
-              {...makeTextFieldProps(password, setPassword)}
+              {...makeTextFieldProps(firstName, "firstName", setFirstName)}
+            />
+            <TextField
+              {...makeTextFieldProps(lastName, "lastName", setLastName)}
+            />
+            <TextField {...makeTextFieldProps(email, "email", setEmail)} />
+            <TextField
+              {...makeTextFieldProps(password, "password", setPassword)}
               type="password"
             />
             {error && <Alert severity="error">{error}</Alert>}
