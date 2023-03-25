@@ -3,6 +3,7 @@ import { RequestHandler } from "express";
 import { RequestWithJWTBody } from "../dto/jwt";
 import { build_controller } from "../lib/controller_builder";
 import { scheduledEventScheduler } from "../scheduler/scheduler";
+import { generateICal } from "../scheduler/calendar";
 
 type conflicts = {
   a: any,
@@ -11,7 +12,7 @@ type conflicts = {
 const getSchedule =
   (client: PrismaClient): RequestHandler =>
   async (req: RequestWithJWTBody, res) => {
-    let scheduleICal: string = "";
+    let scheduleICal: string = generateICal();
     // Get All schedulers
     const unscheduledEventSchedulers = await client.unscheduledEventScheduler.findMany({
       where: {
@@ -199,12 +200,65 @@ const getSchedule =
     }
 
     // Schedule Unscheduled
+    var unscheduledSchedulePointer =  new Date(schedulePointer.valueOf());
+    while(unscheduledEventSchedulers.length > 0) {
+      const currentEvent = unscheduledEventSchedulers.pop();
+      if (currentEvent!!.base?.doneScheduling) {
+        continue;
+      }
+
+      if (currentEvent?.base.lastScheduled == unscheduledSchedulePointer) {
+        var nextEvent = unscheduledEventSchedulers.pop()
+        unscheduledEventSchedulers
+      }
+
+      const timeFromDuration = unscheduledSchedulePointer.getMinutes() + nextEvent?.base?.duration 
+      const conflict : Event | null = await wouldConflict(client, unscheduledSchedulePointer, timeFromDuration)
+      if (conflict) {
+        conflicts.push({a: nextEvent, b: conflict})
+      }
+
+      const newEvent = await client.event.create({
+        data: {
+          start: nextUp!!.startDateTime,
+          end: nextUp!!.endDateTime,
+          userId: nextUp!!.userId,
+          schedulerId: nextUp!!.id,
+          kind: "FIXED_TIME",
+          complete: false,
+          deleted: false
+        },
+        include: {
+          scheduler:true
+        }
+      });
+      // handle repeat, once a month, once a year, once every six months
+      // look at the length of the repeat info
+      // duration is in minutes
+      // go off duration rather than start or end time
+      var doneScheduling = false;
+      if (currentEvent!!.repeatInfo.days.split(',').length < 1) {
+        doneScheduling = true;
+      }
+      else if (currentEvent!!.repeatInfo.repeatType === "WEEKLY") {
+        currentEvent!!.base.lastScheduled = 
+      }
+      else if (currentEvent!!.repeatInfo.repeatType === "MONTHLY") {
+
+      } else {
+
+      }
+
+    }
+
 
     res.set({
       "Content-Disposition": 'attachment; filename="newEvents.ics"',
       "Content-type": "text/calendar",
     });
-    res.send(scheduleICal);
+    let eventsWithBase = "";
+    let deletedEventsWithBase = "";
+    res.send(generateICal(eventsWithBase, deletedEventsWithBase));
   };
 
 const wouldConflict = async (client:PrismaClient, start:Date, end:Date):Promise<Event|null> => {
