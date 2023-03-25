@@ -143,7 +143,7 @@ const getSchedule =
       if (currentEvent!!.base.doneScheduling) {
         continue;
       }
-      if (currentEvent?.base.lastScheduled == mySchedulePointer) {
+      if (currentEvent?.base.lastScheduled == mySchedulePointer && dueDateEventSchedulers.length > 0) {
         var nextEvent = dueDateEventSchedulers.pop()
         dueDateEventSchedulers.push(currentEvent);
         currentEvent = nextEvent;
@@ -158,7 +158,7 @@ const getSchedule =
         dueDateEventSchedulers.push(currentEvent!!);
         continue;
       }
-      client.event.create({
+      const event = await client.event.create({
         data:{
           start:mySchedulePointer,
           end: instanceEndTime,
@@ -168,7 +168,8 @@ const getSchedule =
           deleted:false,
           kind:"DUE_DATE"
         }
-      })
+      });
+      newEvents.push(event);
       var doneScheduling = false
       // Check to see if we finished scheduling
       currentEvent!.amountScheduled += (instanceEndTime.getTime() - schedulePointer.getTime())/(60000)
