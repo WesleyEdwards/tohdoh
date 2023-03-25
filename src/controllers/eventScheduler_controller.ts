@@ -417,7 +417,7 @@ const deleteDueDateEventScheduler =
     }
   };
 
-export const eventSchedulerController = build_controller("users", [
+export const eventSchedulerController = build_controller("eventSchedulers", [
   { path: "/me", endpointBuilder: getMine, method: "get" },
   {
     path: "/unscheduledEventScheduler",

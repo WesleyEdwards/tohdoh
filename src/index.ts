@@ -5,6 +5,8 @@ import path from "path";
 import { engine } from "express-handlebars";
 import { tokenController } from "./controllers/token_controller";
 import { usersController } from "./controllers/user_controller";
+import { eventSchedulerController } from "./controllers/eventScheduler_controller";
+import { scheduleController } from "./controllers/schedule_controller";
 
 dotenv.config();
 const client = new PrismaClient();
@@ -35,6 +37,8 @@ if (process.env.NODE_ENV !== "production") {
 
 usersController(app, client);
 tokenController(app, client);
+eventSchedulerController(app, client);
+scheduleController(app, client);
 
 app.get("/*", (req, res) => {
   console.log("root");
