@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import React, { FC } from "react";
 import { useNavigate } from "react-router-dom";
+import { logoImage } from "../colors";
 
 export const Landing: FC = () => {
   const navigate = useNavigate();
@@ -20,10 +21,7 @@ export const Landing: FC = () => {
       <Divider sx={{ my: 2 }} />
 
       <Stack padding={2} gap={1}>
-        <Typography>- Todo</Typography>
-        <Typography>- Todoing</Typography>
-        <Typography>- Todone</Typography>
-        <Typography>- That's Todo</Typography>
+        <img src={logoImage} alt="Tohdoh" style={{ width: "100%" }} />
       </Stack>
 
       <Stack

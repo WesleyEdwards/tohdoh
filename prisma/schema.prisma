@@ -11,106 +11,106 @@ datasource db {
 }
 
 model User {
-  id Int @unique @id @default(autoincrement())
-  email String @unique
-  passwordHash String
-  firstName String
-  lastName String
-  activeHours ActiveHours?
-  eventSchedulers EventSchedulerBase[]
-  events Event[]
-  procrastinationIndex Int @default(1)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                    Int                         @id @unique @default(autoincrement())
+  email                 String                      @unique
+  passwordHash          String
+  firstName             String
+  lastName              String
+  activeHours           ActiveHours?
+  scheduledSchedulers   ScheduledEventScheduler[]
+  unscheduledSchedulers UnscheduledEventScheduler[]
+  dueDateSchedulers     DueDateEventScheduler[]
+  events                Event[]
+  procrastinationIndex  Int                         @default(1)
+  createdAt             DateTime                    @default(now())
+  updatedAt             DateTime                    @updatedAt
 }
 
 model EventSchedulerBase {
-  name String
-  id Int @id @default(autoincrement())
-  userId Int
-  user User @relation(fields:[userId], references: [id])
-  latX Float
-  latY Float
-  travelTime Float
-  duration Float
-  doneScheduling Boolean
-  priority Int
-  lastScheduled DateTime
-  events Event[]
-  scheduledEvent ScheduledEventScheduler?
+  name             String
+  id               Int                        @id @default(autoincrement())
+  latX             Float
+  latY             Float
+  travelTime       Float
+  duration         Float
+  doneScheduling   Boolean
+  priority         Int
+  lastScheduled    DateTime
+  events           Event[]
+  scheduledEvent   ScheduledEventScheduler?
   unscheduledEvent UnscheduledEventScheduler?
-  dueDateEvent DueDateEventScheduler?
+  dueDateEvent     DueDateEventScheduler?
 }
 
 model ScheduledEventScheduler {
-  id Int @id @default(autoincrement())
-  baseId Int @unique
-  repeatId Int @unique
-  base EventSchedulerBase @relation(fields:[baseId], references: [id])
-  repeatInfo RepeatInfo @relation(fields:[repeatId], references: [id])
+  id            Int                @id @default(autoincrement())
+  baseId        Int                @unique
+  userId        Int
+  user          User               @relation(fields: [userId], references: [id])
+  repeatId      Int                @unique
+  base          EventSchedulerBase @relation(fields: [baseId], references: [id])
+  repeatInfo    RepeatInfo         @relation(fields: [repeatId], references: [id])
   startDateTime DateTime
-  endDateTime DateTime
+  endDateTime   DateTime
 }
 
 model DueDateEventScheduler {
-  id Int @id @default(autoincrement())
-  baseId Int @unique
-  base EventSchedulerBase @relation(fields:[baseId], references: [id])
-  dueDateTime DateTime
-  blockSize DateTime
-  amountScheduled DateTime
+  id              Int                @id @default(autoincrement())
+  baseId          Int                @unique
+  base            EventSchedulerBase @relation(fields: [baseId], references: [id])
+  userId          Int
+  user            User               @relation(fields: [userId], references: [id])
+  dueDateTime     DateTime
+  blockSize       Float
+  amountScheduled Float
 }
 
 model UnscheduledEventScheduler {
-  id Int @id @default(autoincrement())
-  baseId Int @unique
-  repeatId Int @unique
-  base EventSchedulerBase @relation(fields:[baseId], references: [id])
-  repeatInfo RepeatInfo @relation(fields:[repeatId], references: [id])
+  id         Int                @id @default(autoincrement())
+  baseId     Int                @unique
+  repeatId   Int                @unique
+  userId     Int
+  user       User               @relation(fields: [userId], references: [id])
+  base       EventSchedulerBase @relation(fields: [baseId], references: [id])
+  repeatInfo RepeatInfo         @relation(fields: [repeatId], references: [id])
 }
 
 model Event {
-  id Int @id @default(autoincrement())
-  start DateTime
-  end DateTime
-  userId Int
+  id          Int                @id @default(autoincrement())
+  start       DateTime
+  end         DateTime
+  userId      Int
   schedulerId Int
-  user User @relation(fields: [userId], references: [id])
-  scheduler EventSchedulerBase @relation(fields: [schedulerId], references: [id])
-  kind String
-  complete Boolean
+  user        User               @relation(fields: [userId], references: [id])
+  scheduler   EventSchedulerBase @relation(fields: [schedulerId], references: [id])
+  kind        String
+  complete    Boolean
 }
 
 model ActiveHours {
-  id Int @id @default(autoincrement())
-  userId Int @unique
-  user User @relation(fields: [userId], references: [id])
-  startMonday DateTime
-  endMonday DateTime
-  startTuesday DateTime
-  endTuesday DateTime
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique
+  user           User     @relation(fields: [userId], references: [id])
+  startMonday    DateTime
+  endMonday      DateTime
+  startTuesday   DateTime
+  endTuesday     DateTime
   startWednesday DateTime
-  endWednesday DateTime
-  startThursday DateTime
-  endThursday DateTime
-  startFriday DateTime
-  endFriday DateTime
-  startSaturday DateTime
-  endSaturday DateTime  
-  startSunday DateTime
-  endSunday DateTime
+  endWednesday   DateTime
+  startThursday  DateTime
+  endThursday    DateTime
+  startFriday    DateTime
+  endFriday      DateTime
+  startSaturday  DateTime
+  endSaturday    DateTime
+  startSunday    DateTime
+  endSunday      DateTime
 }
 
 model RepeatInfo {
-  id Int @id @default(autoincrement())
-  repeatType Int
-  sunday Boolean
-  monday Boolean
-  tuesday Boolean
-  wednesday Boolean
-  thursday Boolean
-  friday Boolean
-  saturday Boolean
+  id          Int                        @id @default(autoincrement())
+  repeatType  String
+  days        String
   unscheduled UnscheduledEventScheduler?
-  scheduled ScheduledEventScheduler?
+  scheduled   ScheduledEventScheduler?
 }
