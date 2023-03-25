@@ -30,7 +30,7 @@ export const HeaderTitle: FC<HeaderTitleProps> = (props) => {
         ) : (
           <Typography
             variant={secondary ? "h4" : "h3"}
-            sx={{ mb: secondary ? "2rem" : undefined }}
+            // sx={{ mb: secondary ? "2rem" : undefined }}
           >
             {title}
           </Typography>

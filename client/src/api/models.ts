@@ -103,3 +103,10 @@ export type RepeatInfo = {
   unscheduled?: UnscheduledEventScheduler;
   scheduled?: ScheduledEventScheduler;
 };
+
+// Responses
+export type GetMineRes = {
+  unscheduledEventSchedulers: UnscheduledEventScheduler[];
+  scheduledEventSchedulers: ScheduledEventScheduler[];
+  dueDateEventSchedulers: DueDateEventScheduler[];
+};
