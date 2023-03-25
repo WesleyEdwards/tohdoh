@@ -6,7 +6,7 @@ type Method = "get" | "post" | "put" | "delete";
 
 export class Api {
   private token = "";
-  private baseUrl = "http://localhost:8000/api";
+  private baseUrl = `http://localhost:${import.meta.env.VITE_PORT}/api`;
 
   constructor() {
     const token = getToken();
@@ -77,6 +77,4 @@ export class Api {
       return res.user;
     });
   }
-
-  
 }
