@@ -1,6 +1,18 @@
 import { getToken, setTokenToLocalStorage } from "../utils/miscFunctions";
-import { CreateUserBody, LoginBody } from "./apiTypes";
-import { User } from "./models";
+import {
+  CreateDueDateEventSchedulerBody,
+  CreateScheduledEventSchedulerBody,
+  CreateUnscheduledEventSchedulerBody,
+  CreateUserBody,
+  LoginBody,
+} from "./apiTypes";
+import {
+  DueDateEventScheduler,
+  GetMineRes,
+  ScheduledEventScheduler,
+  UnscheduledEventScheduler,
+  User,
+} from "./models";
 
 type Method = "get" | "post" | "put" | "delete";
 
@@ -76,5 +88,34 @@ export class Api {
       this.setToken(res.token);
       return res.user;
     });
+  }
+
+  getMySchedulers(): Promise<GetMineRes> {
+    return this.get("eventSchedulers/me");
+  }
+
+  getScheduledEventScheduler(): Promise<ScheduledEventScheduler[]> {
+    return this.getMySchedulers().then((res) => {
+      return res.scheduledEventSchedulers;
+    });
+  }
+  getUnscheduledEventScheduler(): Promise<UnscheduledEventScheduler[]> {
+    return this.getMySchedulers().then((res) => {
+      return res.unscheduledEventSchedulers;
+    });
+  }
+  getDueDateEventScheduler(): Promise<DueDateEventScheduler[]> {
+    return this.getMySchedulers().then((res) => {
+      return res.dueDateEventSchedulers;
+    });
+  }
+  createDueDateEventScheduler(body: CreateDueDateEventSchedulerBody) {
+    return this.post("eventSchedulers/dueDateEventScheduler", body);
+  }
+  createScheduledEventScheduler(body: CreateScheduledEventSchedulerBody) {
+    return this.post("eventSchedulers/scheduledEventScheduler", body);
+  }
+  createUnscheduledEventScheduler(body: CreateUnscheduledEventSchedulerBody) {
+    return this.post("unscheduledEventScheduler/unscheduledEventScheduler", body);
   }
 }
