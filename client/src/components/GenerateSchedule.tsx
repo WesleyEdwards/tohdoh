@@ -87,7 +87,7 @@ export const GenerateSchedule: FC<GenerateScheduleProps> = ({
   );
 };
 
-function downloadIcalFile(icalData: string, fileName: string) {
+export function downloadIcalFile(icalData: string, fileName: string) {
   const icalBlob = new Blob([icalData], {
     type: "text/calendar;charset=utf-8",
   });

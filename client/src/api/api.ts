@@ -120,6 +120,8 @@ export class Api {
   }
 
   generateTheDangSchedule(days: number): Promise<string> {
-    return this.get(`schedules/${days}`);
+    return this.get(`schedules/${days}`).then((res) => {
+      return res.blob;
+    });
   }
 }
