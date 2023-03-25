@@ -16,6 +16,7 @@ model User {
   passwordHash          String
   firstName             String
   lastName              String
+  dirtyDate             DateTime                    @default(now())
   activeHours           ActiveHours?
   scheduledSchedulers   ScheduledEventScheduler[]
   unscheduledSchedulers UnscheduledEventScheduler[]
