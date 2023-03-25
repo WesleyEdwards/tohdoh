@@ -10,68 +10,82 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id Int @id @default(autoincrement())
-  firstName String
-  lastName String
-  email String @unique
-  passwordHash String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  reptiles Reptile[]
-  schedules Schedule[]
-}
-
-model Reptile {
-  id Int @id @default(autoincrement())
-  userId Int
-  user User @relation(fields: [userId], references: [id])
-  species String
+model EventScheduler {
   name String
-  sex String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  feedings Feeding[]
-  husbandryRecords HusbandryRecord[]
-  schedules Schedule[]
+  id Int @id @default(autoincrement())
+  latX Float
+  latY Float
+  travelTime Float
+  duration Float
+  doneScheduling Boolean
+  priority Int
+  lastScheduled DateTime
 }
 
-model Feeding {
+model Event {
   id Int @id @default(autoincrement())
-  foodItem String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  reptileId Int
-  reptile Reptile @relation(fields: [reptileId], references: [id])
-}
-
-model HusbandryRecord {
-  id Int @id @default(autoincrement())
-  reptileId Int
-  length Float
-  weight Float
-  temperature Float
-  humidity Float
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  reptile Reptile @relation(fields: [reptileId], references: [id])
-}
-
-model Schedule {
-  id Int @id @default(autoincrement())
-  reptileId Int
+  start DateTime
+  end DateTime
   userId Int
-  type String
-  description String
-  monday Boolean
-  tuesday Boolean
-  wednesday Boolean
-  thursday Boolean
-  friday Boolean
-  saturday Boolean
-  sunday Boolean
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  reptile Reptile @relation(fields: [reptileId], references: [id])
+  schedulerId Int
   user User @relation(fields: [userId], references: [id])
+  scheduler EventScheduler @relation(fields: [schedulerId], references: [id])
+  kind String
+  complete Boolean
+}
+
+model User {
+  email String @unique
+  password String @unique
+  id Int @id @default(autoincrement())
+  ScheduledEventScheduler EventScheduler[] @relation(fields: [userId], references: [id])
+  DueDateEventScheduler EventScheduler[]
+  UnscheduledEventScheduler EventScheduler[]
+  events Event
+  activeHours ActiveHours
+  procrastinationIndex Int
+}
+
+model ActiveHours {
+  startMonday DateTime
+  endMonday DateTime
+  startTuesday DateTime
+  endTuesday DateTime
+  startWednesday DateTime
+  endWednesday DateTime
+  startThursday DateTime
+  endThursday DateTime
+  startFriday DateTime
+  endFriday DateTime
+  startSaturday DateTime
+  endSaturday DateTime  
+  startSunday DateTime
+  endSunday DateTime
+}
+
+model ScheduledEventScheduler {
+  repeatInfo RepeatInfo
+  startDateTime DateTime
+  endDateTime DateTime
+}
+
+model DueDateEventScheduler {
+  dueDateTime DateTime
+  blockSize DateTime
+  amountScheduled DateTime
+}
+
+model UnscheduledEventScheduler {
+  repeatInfo RepeatInfo
+}
+
+model RepeatInfo {
+  repeatType RepeatType
+  days Int[]
+}
+
+enum RepeatType {
+  DAY
+  MONTH
+  YEAR
 }
