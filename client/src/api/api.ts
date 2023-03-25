@@ -117,7 +117,7 @@ export class Api {
   }
   createUnscheduledEventScheduler(body: CreateUnscheduledEventSchedulerBody) {
     return this.post(
-      "unscheduledEventScheduler/unscheduledEventScheduler",
+      "eventSchedulers/unscheduledEventScheduler",
       body
     );
   }
