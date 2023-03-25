@@ -22,6 +22,9 @@ const getSchedule =
       }
     })
 
+    console.log(unscheduledEventSchedulers);
+    // await new Promise(r => setTimeout(r, 10000));
+
     const scheduledEventSchedulers =
       await client.scheduledEventScheduler.findMany({
         where: {
@@ -99,14 +102,18 @@ const getSchedule =
         nextUp!!.base.lastScheduled.setTime(nextUp!!.startDateTime.getTime());
         var repeatArr = nextUp!!.repeatInfo.days.split(',');
         repeatArr = repeatArr.filter(e=>e!=='');
-        const oldIndex = repeatArr.indexOf(nextUp!!.base.lastScheduled.getDay().toString())
-        const nextIndex = (oldIndex + 1) % repeatArr.length;
+        var ints = repeatArr.map(e => parseInt(e)).sort()
+        var oldIndex = ints.indexOf(nextUp!!.base.lastScheduled.getDay());
+        if (oldIndex < 0) { oldIndex = 0;}
+        const nextIndex = (oldIndex + 1) % ints.length;
         let dayDiff = 0;
-        console.log(repeatArr)
+        console.log(ints)
+        console.log(oldIndex)
+        console.log(nextIndex)
         if (nextIndex == 0) {
-          dayDiff = 7 - parseInt(repeatArr[oldIndex]) + parseInt(repeatArr[nextIndex]);
+          dayDiff = 7 - ints[oldIndex] + ints[nextIndex];
         } else {
-          dayDiff = parseInt(repeatArr[nextIndex]) - parseInt(repeatArr[oldIndex])
+          dayDiff = ints[nextIndex] - ints[oldIndex];
         }
         console.log("dayDiff:"+dayDiff)
         console.log(nextUp!!.startDateTime);
@@ -250,7 +257,12 @@ const getSchedule =
       endTime.setMinutes(endTime.getMinutes() + currentUnscheduledEvent!!.base!!.duration);
       console.log("I'm calling from unscheduled")
       const conflict : Event | null = await wouldConflict(client, unscheduledSchedulePointer, endTime)
-
+      if (conflict && currentUnscheduledEvent?.base.name === "Make Bread") {
+        console.log("Not enough room for bread");
+      } else if (currentUnscheduledEvent?.base.name === "Make Bread") {
+        console.log("we in it to bread rn");
+        console.log(currentUnscheduledEvent!!.id)
+      }
       if (conflict) {
         unscheduledSchedulePointer.setTime(conflict!!.end.getTime())
         tempEvents.push(currentUnscheduledEvent!!);
@@ -267,7 +279,7 @@ const getSchedule =
           start: unscheduledSchedulePointer,
           end: endTime,
           userId: currentUnscheduledEvent!!.userId,
-          schedulerId: currentUnscheduledEvent!!.id,
+          schedulerId: currentUnscheduledEvent!!.baseId,
           kind: "FLEXIBLE_TIME",
           complete: false,
           deleted: false
@@ -284,6 +296,7 @@ const getSchedule =
       unscheduledSchedulePointer.setTime(newEvent.end.getTime());
       console.log(unscheduledSchedulePointer)
       console.log(unscheduledSchedulePointer < endPoint);
+      console.log(endPoint);
     }
 
 
