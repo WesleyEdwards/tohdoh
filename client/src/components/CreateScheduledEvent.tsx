@@ -23,7 +23,7 @@ import {
 import { AuthContext } from "../context/AuthContext";
 import { Day, dayMap, dayOfYear, monthMap } from "../utils/constants";
 import { emptyBaseBody } from "../utils/emptyObjects";
-import { camelToTitleCase } from "../utils/miscFunctions";
+import { addHoursToDate, camelToTitleCase } from "../utils/miscFunctions";
 import { CreateBaseBody } from "./CreateBaseBody";
 
 export const CreateScheduledEvent: FC<{ onCreate: () => void }> = ({
@@ -64,6 +64,7 @@ export const CreateScheduledEvent: FC<{ onCreate: () => void }> = ({
       if (res.error) return setError(res.error);
       handleClose();
     });
+    onCreate();
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,11 +100,7 @@ export const CreateScheduledEvent: FC<{ onCreate: () => void }> = ({
     }
   };
 
-  const dirty = [
-    scheduler.baseInfo.name,
-    scheduler.endDateTime,
-    scheduler.startDateTime,
-  ].some((field) => field === "");
+  const dirty = [scheduler.baseInfo.name, startDate].some((field) => !field);
 
   const handleClose = () => {
     onCreate();
@@ -144,7 +141,7 @@ export const CreateScheduledEvent: FC<{ onCreate: () => void }> = ({
         />
       </FormControl>
 
-      {repeats && (
+      {repeats ? (
         <>
           <FormControl sx={{ my: "2rem" }} fullWidth>
             <InputLabel>Frequency</InputLabel>
@@ -249,6 +246,39 @@ export const CreateScheduledEvent: FC<{ onCreate: () => void }> = ({
             </div>
           </Stack>
         </>
+      ) : (
+        <Stack direction="row" justifyContent="space-between">
+          <div style={{ width: "100%", paddingBlock: "2rem" }}>
+            <DateTimePicker
+              label="Start Date"
+              value={startDate}
+              onChange={(newValue) => {
+                setStartDate(newValue as Date);
+              }}
+              disablePast
+              renderInput={(params) => <TextField {...params} />}
+              views={["year", "month", "day", "hours", "minutes"]}
+            />
+          </div>
+          <Divider
+            orientation="horizontal"
+            sx={{ width: "5px", alignSelf: "center", color: "white" }}
+            light={false}
+          />
+          <div style={{ width: "100%", paddingBlock: "2rem" }}>
+            <DateTimePicker
+              label="End Date"
+              value={endDate}
+              minDate={startDate}
+              onChange={(newValue) => {
+                setEndDate(newValue as Date);
+              }}
+              disablePast
+              renderInput={(params) => <TextField {...params} />}
+              views={["year", "month", "day", "hours", "minutes"]}
+            />
+          </div>
+        </Stack>
       )}
       <DialogActions>
         <Button onClick={handleClose}>Cancel</Button>

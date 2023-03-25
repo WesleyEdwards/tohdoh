@@ -1,11 +1,11 @@
-import { Container, Stack, Typography } from "@mui/material";
+import { Alert, Button, Container, Stack, Typography } from "@mui/material";
 import React, { FC, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GetMineRes } from "../api/models";
 import { HeaderTitle } from "../components/HeaderTitle";
 import { Spinner } from "../components/Spinner";
 import { AuthContext } from "../context/AuthContext";
-import { UnAuthContext } from "../context/UnAuthContext";
+import { hasUnscheduledEvents } from "../utils/miscFunctions";
 
 export const Dashboard: FC = () => {
   const { setUser, api } = useContext(AuthContext);
@@ -19,7 +19,7 @@ export const Dashboard: FC = () => {
     });
   }, []);
 
-  if (mySchedules === null) return <Spinner />;
+  if (!mySchedules) return <Spinner />;
 
   return (
     <Container maxWidth="md">
@@ -31,27 +31,22 @@ export const Dashboard: FC = () => {
           </Typography>
         }
       />
-      <Typography>My Schedules</Typography>
-      {mySchedules ? (
-        <>
-          {/* <Stack>
-            {mySchedules.scheduledEventSchedulers.map((schedule) => (
-              <div key={schedule.id}>{schedule.base.name}</div>
-            ))}
-          </Stack>
-          <Stack>
-            {mySchedules.dueDateEventSchedulers.map((schedule) => (
-              <div key={schedule.id}>{schedule.base.name}</div>
-            ))}
-          </Stack>
-          <Stack>
-            {mySchedules.unscheduledEventSchedulers.map((schedule) => (
-              <div key={schedule.id}>{schedule.base.name}</div>
-            ))}
-          </Stack> */}
-        </>
-      ) : (
-        <Spinner />
+      {hasUnscheduledEvents(mySchedules) && (
+        <Alert
+          severity="info"
+          variant="filled"
+          action={
+            <Button
+              variant="outlined"
+              sx={{ color: "black", borderColor: "black" }}
+              onClick={() => navigation("/schedules")}
+            >
+              View Schedules
+            </Button>
+          }
+        >
+          You have unscheduled events
+        </Alert>
       )}
     </Container>
   );

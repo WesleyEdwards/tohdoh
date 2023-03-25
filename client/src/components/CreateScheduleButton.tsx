@@ -13,20 +13,23 @@ import {
   Tooltip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { useState } from "react";
+import { FC, useState } from "react";
 import { CreateScheduledEvent } from "./CreateScheduledEvent";
 import CreateUnscheduledEvent from "./CreateUnscheduledEvent";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 type WhichType = "fixed-time" | "flexible-time";
 
-export const CreateScheduleButton = () => {
+export const CreateScheduleButton: FC<{ onCreate: () => void }> = ({
+  onCreate,
+}) => {
   const [open, setOpen] = useState(false);
 
   const [whichType, setWhichType] = useState<WhichType>("fixed-time");
 
   const handleClose = () => {
     setOpen(false);
+    onCreate();
   };
 
   const handleCreate = () => {

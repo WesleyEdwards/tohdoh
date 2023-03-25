@@ -116,6 +116,13 @@ export class Api {
     return this.post("eventSchedulers/scheduledEventScheduler", body);
   }
   createUnscheduledEventScheduler(body: CreateUnscheduledEventSchedulerBody) {
-    return this.post("unscheduledEventScheduler/unscheduledEventScheduler", body);
+    return this.post(
+      "unscheduledEventScheduler/unscheduledEventScheduler",
+      body
+    );
+  }
+
+  generateTheDangSchedule(days: number) {
+    return this.get(`schedules/${days}`);
   }
 }

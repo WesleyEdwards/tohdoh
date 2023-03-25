@@ -195,3 +195,4 @@ export const scheduleController = build_controller("schedules", [
   { path: "/:days", endpointBuilder: getSchedule, method: "get" },
   { path: "/events", endpointBuilder: getEvents, method: "get"}
 ]);
+

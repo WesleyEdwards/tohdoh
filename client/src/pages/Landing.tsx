@@ -21,7 +21,7 @@ export const Landing: FC = () => {
       <Divider sx={{ my: 2 }} />
 
       <Stack padding={2} gap={1}>
-        <img src={logoImage} alt="Tohdoh" style={{ width: "100%" }} />
+        <img src={logoImage} alt="Tohdoh" style={{ width: "90%" }} />
       </Stack>
 
       <Stack

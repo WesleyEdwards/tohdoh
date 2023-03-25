@@ -13,7 +13,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { useContext, useState } from "react";
+import { FC, useContext, useState } from "react";
 import { emptyBaseBody } from "../utils/emptyObjects";
 import { CreateDueDateEventSchedulerBody } from "../api/apiTypes";
 import { CreateBaseBody } from "./CreateBaseBody";
@@ -22,7 +22,9 @@ import { AuthContext } from "../context/AuthContext";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
-export const CreateDueDateEvent = () => {
+export const CreateDueDateEvent: FC<{ onCreate: () => void }> = ({
+  onCreate,
+}) => {
   const { api } = useContext(AuthContext);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +33,7 @@ export const CreateDueDateEvent = () => {
     dueDateTime: "",
     blockSize: 0,
   });
-  const [date, setDate] = useState(new Date());
+  const [date, setDate] = useState<Date>();
 
   const dirty = [
     scheduler.baseInfo.name === "",
@@ -42,14 +44,27 @@ export const CreateDueDateEvent = () => {
   const handleClose = () => {
     setOpen(false);
     setError(null);
+    setScheduler({
+      baseInfo: { ...emptyBaseBody },
+      dueDateTime: "",
+      blockSize: 0,
+    });
+    setDate(undefined);
   };
 
   const handleCreate = () => {
+    if (!date) return;
     api.createDueDateEventScheduler({
       ...scheduler,
+      baseInfo: {
+        ...scheduler.baseInfo,
+        duration: scheduler.baseInfo.duration * 60,
+      },
+      blockSize: scheduler.blockSize * 60,
       dueDateTime: date.toISOString(),
     });
     handleClose();
+    onCreate();
   };
 
   return (
@@ -109,7 +124,7 @@ export const CreateDueDateEvent = () => {
                   </InputAdornment>
                 ),
               }}
-              label="Alloted Time"
+              label="Allocated Time"
             />
 
             <Tooltip
