@@ -10,6 +10,7 @@ import {
   Stack,
   TextField,
   TextFieldProps,
+  Tooltip,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useContext, useState } from "react";
@@ -18,6 +19,8 @@ import { CreateDueDateEventSchedulerBody } from "../api/apiTypes";
 import { CreateBaseBody } from "./CreateBaseBody";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AuthContext } from "../context/AuthContext";
+import { DateTimePicker } from "@mui/x-date-pickers";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 export const CreateDueDateEvent = () => {
   const { api } = useContext(AuthContext);
@@ -51,19 +54,25 @@ export const CreateDueDateEvent = () => {
 
   return (
     <>
-      <Button
-        variant="outlined"
-        onClick={() => setOpen(true)}
-        startIcon={<AddIcon />}
-      >
-        Add Event
-      </Button>
+      <Tooltip
+        children={
+          <Button
+            variant="outlined"
+            onClick={() => setOpen(true)}
+            startIcon={<AddIcon />}
+          >
+            Deadline
+          </Button>
+        }
+        title="Something you need to do before a due date (e.g. study for a test)"
+      />
 
       <Dialog open={open} onClose={handleClose} fullWidth>
         <DialogTitle>Add To Calendar</DialogTitle>
         <DialogContent>
           <CreateBaseBody
             body={scheduler.baseInfo}
+            deadline
             setBody={(newScheduler) =>
               setScheduler((prevState) => ({
                 ...prevState,
@@ -71,7 +80,13 @@ export const CreateDueDateEvent = () => {
               }))
             }
           />
-          <Stack direction="row" width="100%" justifyContent="space-between">
+          <Stack
+            direction="row"
+            width="100%"
+            alignItems="center"
+            gap="1rem"
+            justifyContent="space-between"
+          >
             <TextField
               value={scheduler.blockSize}
               sx={{ mt: "1rem" }}
@@ -96,17 +111,25 @@ export const CreateDueDateEvent = () => {
               }}
               label="Alloted Time"
             />
+
+            <Tooltip
+              children={
+                <InfoOutlinedIcon sx={{ mt: "10px" }} fontSize="large" />
+              }
+              title="How much time you want to spend each time you prepare for the deadline (e.g. study for 2 hours)"
+            />
           </Stack>
 
           <div style={{ width: "100%", paddingBlock: "2rem" }}>
-            <DatePicker
-              label="Basic date picker"
+            <DateTimePicker
+              label="Deadline"
               value={date}
-              minDate={new Date()}
-              onChange={(e) => setDate(e ?? new Date())}
-              renderInput={(params: TextFieldProps) => (
-                <TextField {...params} />
-              )}
+              onChange={(newValue) => {
+                setDate(newValue as Date);
+              }}
+              disablePast
+              renderInput={(params) => <TextField {...params} />}
+              views={["year", "month", "day", "hours", "minutes"]}
             />
           </div>
           {error && <Alert severity="error">{error}</Alert>}

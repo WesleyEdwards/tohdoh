@@ -1,14 +1,15 @@
-import { InputAdornment, Stack, TextField } from "@mui/material";
+import { InputAdornment, Stack, TextField, Tooltip } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import { CreateEventSchedulerBaseBody } from "../api/apiTypes";
 
 type CreateBaseBodyProps = {
   body: CreateEventSchedulerBaseBody;
   setBody: (body: CreateEventSchedulerBaseBody) => void;
+  deadline?: boolean;
 };
 
 export const CreateBaseBody: FC<CreateBaseBodyProps> = (props) => {
-  const { body, setBody } = props;
+  const { body, setBody, deadline } = props;
   const [baseInfo, setBaseInfo] = useState<CreateEventSchedulerBaseBody>(body);
 
   useEffect(() => {
@@ -30,32 +31,41 @@ export const CreateBaseBody: FC<CreateBaseBodyProps> = (props) => {
             name: e.target.value,
           }))
         }
-        label="Name"
+        label={deadline ? "Deadline Name" : "Event Name"}
       />
       <Stack direction="row" width="100%" gap="1rem">
-        <TextField
-          sx={{ maxWidth: "18rem" }}
-          fullWidth
-          value={baseInfo.duration}
-          type="number"
-          onChange={(e) =>
-            setBaseInfo((prev) => ({
-              ...prev,
-              duration: parseInt(e.target.value),
-            }))
+        <Tooltip
+          children={
+            <TextField
+              sx={{ maxWidth: "18rem" }}
+              fullWidth
+              value={baseInfo.duration}
+              type="number"
+              onChange={(e) =>
+                setBaseInfo((prev) => ({
+                  ...prev,
+                  duration: parseInt(e.target.value),
+                }))
+              }
+              InputProps={{
+                inputProps: {
+                  min: 0,
+                  max: 24,
+                },
+                endAdornment: (
+                  <InputAdornment position="start" sx={{ px: "5px" }}>
+                    hr
+                  </InputAdornment>
+                ),
+              }}
+              label="Duration"
+            />
           }
-          InputProps={{
-            inputProps: {
-              min: 0,
-              max: 24,
-            },
-            endAdornment: (
-              <InputAdornment position="start" sx={{ px: "5px" }}>
-                hr
-              </InputAdornment>
-            ),
-          }}
-          label="Duration"
+          title={
+            deadline
+              ? "much total time it will take to prepare for the deadline"
+              : "how long the event will take"
+          }
         />
         <TextField
           fullWidth
