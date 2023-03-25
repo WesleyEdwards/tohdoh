@@ -1,62 +1,105 @@
-import { ScheduleType, SpeciesType } from "./apiTypes";
-
 type DateTime = string;
 
 export type User = {
   id: number;
+  email: string;
   firstName: string;
   lastName: string;
-  email: string;
+  activeHours?: ActiveHours;
+  scheduledSchedulers: ScheduledEventScheduler[];
+  unscheduledSchedulers: UnscheduledEventScheduler[];
+  dueDateSchedulers: DueDateEventScheduler[];
+  events: Event[];
+  procrastinationIndex: number;
   createdAt: DateTime;
   updatedAt: DateTime;
 };
 
-export type Reptile = {
+export type ActiveHours = {
   id: number;
   userId: number;
-  species: SpeciesType;
+  user: User;
+  startMonday: DateTime;
+  endMonday: DateTime;
+  startTuesday: DateTime;
+  endTuesday: DateTime;
+  startWednesday: DateTime;
+  endWednesday: DateTime;
+  startThursday: DateTime;
+  endThursday: DateTime;
+  startFriday: DateTime;
+  endFriday: DateTime;
+  startSaturday: DateTime;
+  endSaturday: DateTime;
+  startSunday: DateTime;
+  endSunday: DateTime;
+};
+
+export type Event = {
+  id: number;
+  start: DateTime;
+  end: DateTime;
+  user: User;
+  scheduler: EventSchedulerBase;
+  userId: number;
+  schedulerId: number;
+  kind: string;
+  complete: Boolean;
+};
+
+export type EventSchedulerBase = {
+  id: number;
   name: string;
-  sex: string;
-  createdAt: DateTime;
-  updatedAt: DateTime;
-  feeding: Feeding[];
-  husbandryRecord: HusbandryRecord[];
-  schedule: Schedule[];
-};
-export type Feeding = {
-  id: number;
-  reptile: Reptile;
-  reptileId: number;
-  foodItem: string;
-  createdAt: DateTime;
-  updatedAt: DateTime;
+  latX: number;
+  latY: number;
+  travelTime: number;
+  duration: number;
+  doneScheduling: boolean;
+  priority: number;
+  lastScheduled: DateTime;
+  events: Event[];
+  scheduledEvent?: ScheduledEventScheduler;
+  unscheduledEvent?: UnscheduledEventScheduler;
+  dueDateEvent?: DueDateEventScheduler;
 };
 
-export type HusbandryRecord = {
+export type DueDateEventScheduler = {
   id: number;
-  reptile: Reptile;
-  reptileId: number;
-  length: number;
-  weight: number;
-  temperature: number;
-  humidity: number;
-  createdAt: DateTime;
-  updatedAt: DateTime;
-};
-
-export type Schedule = {
-  id: number;
-  reptileId: number;
+  base: EventSchedulerBase;
+  baseId: number;
   userId: number;
-  type: ScheduleType;
-  description: string;
-  monday: boolean;
-  tuesday: boolean;
-  wednesday: boolean;
-  thursday: boolean;
-  friday: boolean;
-  saturday: boolean;
-  sunday: boolean;
-  createdAt?: DateTime;
-  updatedAt?: DateTime;
+  user: User;
+  dueDateTime: DateTime;
+  blockSize: number;
+  amountScheduled: number;
+};
+
+export type UnscheduledEventScheduler = {
+  id: number;
+  base: EventSchedulerBase;
+  baseId: number;
+  repeatId: number;
+  userId: number;
+  user: User;
+  repeatInfo: RepeatInfo;
+};
+
+export type ScheduledEventScheduler = {
+  id: number;
+  base: EventSchedulerBase;
+  baseId: number;
+  userId: number;
+  user: User;
+  repeatId: number;
+  repeatInfo: RepeatInfo;
+  startDateTime: DateTime;
+  endDateTime: DateTime;
+};
+
+export type RepeatInfo = {
+  id: number;
+  repeatType: string;
+  days: string;
+  unscheduled?: UnscheduledEventScheduler;
+  scheduled?: ScheduledEventScheduler;
 };

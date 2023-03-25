@@ -1,6 +1,6 @@
 import { getToken, setTokenToLocalStorage } from "../utils/miscFunctions";
 import { CreateUserBody, LoginBody } from "./apiTypes";
-import { Reptile, User, Schedule, HusbandryRecord, Feeding } from "./models";
+import { User } from "./models";
 
 type Method = "get" | "post" | "put" | "delete";
 
@@ -71,10 +71,12 @@ export class Api {
     });
   }
   getUser(): Promise<User | null> {
-    return this.get("users").then((res) => {
+    return this.get("users/me").then((res) => {
       if (!res?.user) return null;
       this.setToken(res.token);
       return res.user;
     });
   }
+
+  
 }

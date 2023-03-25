@@ -6,10 +6,17 @@ interface HeaderTitleProps extends StackProps {
   editing?: boolean;
   secondary?: boolean;
   displayComponent?: JSX.Element;
+  secondaryHeader?: JSX.Element;
 }
 
 export const HeaderTitle: FC<HeaderTitleProps> = (props) => {
-  const { title, children, displayComponent, secondary = false } = props;
+  const {
+    title,
+    children,
+    displayComponent,
+    secondary = false,
+    secondaryHeader,
+  } = props;
   return (
     <>
       <Stack
@@ -30,6 +37,7 @@ export const HeaderTitle: FC<HeaderTitleProps> = (props) => {
         )}
         {children}
       </Stack>
+      {secondaryHeader && <>{secondaryHeader}</>}
       {!secondary && <Divider sx={{ my: "2rem" }} />}
     </>
   );

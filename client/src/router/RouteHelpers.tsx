@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate, RouteObject } from "react-router-dom";
 import HeaderNav from "../components/HeaderNav";
 import CreateAccount from "../pages/CreateAccount";
 import { CreateSchedule } from "../pages/CreateSchedule";
+import Dashboard from "../pages/Dashboard";
 import { Landing } from "../pages/Landing";
 import Profile from "../pages/Profile";
 import SignIn from "../pages/SignIn";
@@ -14,11 +15,7 @@ type RoutePath =
   | "profile"
   | "schedules";
 
-export const authRoutes: RoutePath[] = [
-  "dashboard",
-  "schedules",
-  "profile",
-];
+export const authRoutes: RoutePath[] = ["dashboard", "schedules", "profile"];
 
 export const unAuthRoutes: RoutePath[] = [
   "landing",
@@ -30,9 +27,9 @@ export const routeMap: Record<RoutePath, JSX.Element> = {
   landing: <Landing />,
   "sign-in": <SignIn />,
   "create-account": <CreateAccount />,
-  dashboard: <Landing />,
+  dashboard: <Dashboard />,
   profile: <Profile />,
-  "schedules": <CreateSchedule />,
+  schedules: <CreateSchedule />,
 };
 
 export const authRouter = createBrowserRouter([
