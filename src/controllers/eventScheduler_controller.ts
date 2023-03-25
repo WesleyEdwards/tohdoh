@@ -46,6 +46,20 @@ const createRepeatInfo = async (info: createRepeatInfoBody, client: PrismaClient
     });
     return newRepeatInfo.id;
 }
+const updateRepeatInfo = async (id: number, info: createRepeatInfoBody, client: PrismaClient): Promise<number> => {
+    const {repeatType, days} = info;
+    const daysString = days.join(",");
+    const newRepeatInfo = await client.repeatInfo.update({
+        where: {
+            id
+        },
+        data: {
+            repeatType,
+            "days":daysString
+        }
+    });
+    return newRepeatInfo.id;
+}
 type createUnscheduledEventSchedulerBody = {
     repeatInfo: createRepeatInfoBody,
     baseInfo: createEventSchedulerBaseBody
@@ -63,6 +77,23 @@ const createEventSchedulerBase =  async (base: createEventSchedulerBaseBody, cli
             travelTime:0,
             doneScheduling:false,
             lastScheduled:new Date(0),
+        }
+    });
+    return newBase.id;
+}
+const updateEventSchedulerBase = async (id:number, base: createEventSchedulerBaseBody, client: PrismaClient): Promise<number> => {
+    const {name, latX, latY, duration, priority} = base;
+    const newBase = await client.eventSchedulerBase.update({
+        where: {
+            id
+        },
+        data: {
+            name,
+            latX,
+            latY,
+            duration,
+            priority,
+            travelTime:0,
         }
     });
     return newBase.id;
@@ -86,6 +117,28 @@ const createUnscheduledEventScheduler = (client: PrismaClient): RequestHandler =
             res.json({unscheduledEventScheduler:null, error:"Cannot create EventScheduler."})
         }
 
+      }
+const updateUnscheduledEventScheduler = (client: PrismaClient): RequestHandler =>
+      async (req:RequestWithJWTBody, res) => {
+        const {repeatInfo, baseInfo} = req.body as createUnscheduledEventSchedulerBody;
+        try {
+              const oldES = await client.unscheduledEventScheduler.findFirst({
+                  where:{
+                      userId:req.jwtBody!!.userId,
+                      id: parseInt(req.params.id)
+                  }
+              });
+              if (!oldES) {
+                  res.status(404).json({message:"unScheduledScheduler Not found"})
+                  return;
+              }
+              const baseId = await updateEventSchedulerBase(oldES.baseId,baseInfo, client)
+              const repeatId = await updateRepeatInfo(oldES.repeatId, repeatInfo, client)
+              res.json({dueDateEventScheduler: oldES});
+          } catch (error) {
+              res.status(400)
+              res.json({unscheduledEventScheduler:null, error:"Cannot update EventScheduler."})
+          }
       }
 const deleteUnscheduledEventScheduler = (client: PrismaClient): RequestHandler =>
       async (req:RequestWithJWTBody, res) => {
@@ -144,6 +197,37 @@ const createScheduledEventScheduler = (client: PrismaClient): RequestHandler =>
             res.json({unscheduledEventScheduler:null, error:"Cannot create EventScheduler."})
         }
       }
+const updateScheduledEventScheduler = (client: PrismaClient): RequestHandler =>
+    async (req:RequestWithJWTBody, res) => {
+        const {repeatInfo, baseInfo, startDateTime, endDateTime} = req.body as createScheduledEventSchedulerBody;
+        try {
+            const oldES = await client.scheduledEventScheduler.findFirst({
+                where:{
+                    userId:req.jwtBody!!.userId,
+                    id: parseInt(req.params.id)
+                }
+            });
+            if (!oldES) {
+                res.status(404).json({message:"ScheduledScheduler Not found"})
+                return;
+            }
+            const baseId = await updateEventSchedulerBase(oldES.baseId,baseInfo, client)
+            const repeatId = await updateRepeatInfo(oldES.repeatId, repeatInfo, client)
+            const scheduledEventScheduler = await client.scheduledEventScheduler.update({
+                where: {
+                    id:oldES.id
+                },
+                data: {
+                    startDateTime,
+                    endDateTime,
+                }
+            });
+            res.json({dueDateEventScheduler: scheduledEventScheduler});
+        } catch (error) {
+            res.status(400)
+            res.json({unscheduledEventScheduler:null, error:"Cannot update EventScheduler."})
+        }
+    }
 const deleteScheduledEventScheduler = (client: PrismaClient): RequestHandler =>
       async (req:RequestWithJWTBody, res) => {
         const scheduledEventScheduler = await client.scheduledEventScheduler.findFirst({
@@ -199,6 +283,36 @@ const createDueDateEventScheduler = (client: PrismaClient): RequestHandler =>
             res.json({unscheduledEventScheduler:null, error:"Cannot create EventScheduler."})
         }
       }
+const updateDueDateEventScheduler = (client: PrismaClient): RequestHandler =>
+    async (req:RequestWithJWTBody, res) => {
+        const {baseInfo, dueDateTime, blockSize} = req.body as createDueDateEventSchedulerBody;
+        try {
+            const oldES = await client.dueDateEventScheduler.findFirst({
+                where:{
+                    userId:req.jwtBody!!.userId,
+                    id: parseInt(req.params.id)
+                }
+            });
+            if (!oldES) {
+                res.status(404).json({message:"DueDateScheduler Not found"})
+                return;
+            }
+            const baseId = await updateEventSchedulerBase(oldES.baseId,baseInfo, client)
+            const dueDateEventScheduler = await client.dueDateEventScheduler.update({
+                where: {
+                    id:oldES.id
+                },
+                data: {
+                    dueDateTime,
+                    blockSize,
+                }
+            });
+            res.json({dueDateEventScheduler});
+        } catch (error) {
+            res.status(400)
+            res.json({unscheduledEventScheduler:null, error:"Cannot update EventScheduler."})
+        }
+    }
 const deleteDueDateEventScheduler = (client: PrismaClient): RequestHandler =>
       async (req:RequestWithJWTBody, res) => {
         const dueDateEventScheduler = await client.dueDateEventScheduler.findFirst({
