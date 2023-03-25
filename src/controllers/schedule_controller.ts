@@ -222,7 +222,7 @@ const getSchedule =
     // Schedule Unscheduled
     var unscheduledSchedulePointer =  new Date(schedulePointer.valueOf());
     let tempEvents = []
-    while(unscheduledEventSchedulers.length > 0 || tempEvents.length > 0) {
+    while(unscheduledSchedulePointer < endPoint && (unscheduledEventSchedulers.length > 0 || tempEvents.length > 0)) {
       let currentUnscheduledEvent = unscheduledEventSchedulers.pop();
       if (currentUnscheduledEvent!!.base?.doneScheduling) {
         continue;
@@ -282,6 +282,8 @@ const getSchedule =
       unscheduledEventSchedulers = [...unscheduledEventSchedulers, ...tempEvents];
       currentUnscheduledEvent?.base.lastScheduled.setTime(unscheduledSchedulePointer.getTime());
       unscheduledSchedulePointer.setTime(newEvent.end.getTime());
+      console.log(unscheduledSchedulePointer)
+      console.log(unscheduledSchedulePointer < endPoint);
     }
 
 
