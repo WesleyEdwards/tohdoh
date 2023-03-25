@@ -33,11 +33,14 @@ export const GenerateSchedule: FC<GenerateScheduleProps> = ({
   const [whenToSchedule, setWhenToSchedule] = useState<number>();
 
   const handleClose = () => setOpen(false);
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!whenToSchedule) return;
-    api.generateTheDangSchedule(whenToSchedule * 30);
+    const icalData = await api.generateTheDangSchedule(whenToSchedule * 30);
     onCreate();
     handleClose();
+
+    downloadIcalFile(icalData, "my-calendar.ics");
+
   };
 
   return (
@@ -83,3 +86,17 @@ export const GenerateSchedule: FC<GenerateScheduleProps> = ({
     </>
   );
 };
+
+function downloadIcalFile(icalData: string, fileName: string) {
+  const icalBlob = new Blob([icalData], {
+    type: "text/calendar;charset=utf-8",
+  });
+  const icalUrl = URL.createObjectURL(icalBlob);
+
+  const downloadLink = document.createElement("a");
+  downloadLink.href = icalUrl;
+  downloadLink.download = fileName;
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+}
