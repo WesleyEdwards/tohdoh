@@ -16,6 +16,7 @@ model User {
   passwordHash          String
   firstName             String
   lastName              String
+  dirtyDate             DateTime                    @default(now())
   activeHours           ActiveHours?
   scheduledSchedulers   ScheduledEventScheduler[]
   unscheduledSchedulers UnscheduledEventScheduler[]
@@ -85,6 +86,7 @@ model Event {
   scheduler   EventSchedulerBase @relation(fields: [schedulerId], references: [id])
   kind        String
   complete    Boolean
+  deleted     Boolean
 }
 
 model ActiveHours {
