@@ -228,7 +228,7 @@ const getSchedule =
         continue;
       }
 
-      let nextTimeToSchedule = new Date(currentEvent!!.base.lastScheduled.valueOf())
+      let nextTimeToSchedule = new Date(currentUnscheduledEvent!!.base.lastScheduled.valueOf())
       if (currentUnscheduledEvent?.repeatInfo.repeatType == 'WEEKLY') {
         nextTimeToSchedule.setTime(nextTimeToSchedule.getTime() + 1000*60*60*24*(7 / currentUnscheduledEvent.repeatInfo.days.split(',').length))
       } else if (currentUnscheduledEvent?.repeatInfo.repeatType == 'MONTHLY') {
