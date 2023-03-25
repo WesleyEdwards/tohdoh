@@ -41,10 +41,21 @@ export const CreateUnscheduledEvent: FC<{ onCreate: () => void }> = ({
     });
 
   const handleCreateSchedule = () => {
-    api.createUnscheduledEventScheduler(scheduler).then((res) => {
-      if (res.error) return setError(res.error);
-      handleClose();
-    });
+    api
+      .createUnscheduledEventScheduler({
+        ...scheduler,
+        repeatInfo: {
+          ...scheduler.repeatInfo,
+        },
+        baseInfo: {
+          ...scheduler.baseInfo,
+          duration: scheduler.baseInfo.duration * 60,
+        },
+      })
+      .then((res) => {
+        if (res.error) return setError(res.error);
+        handleClose();
+      });
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
