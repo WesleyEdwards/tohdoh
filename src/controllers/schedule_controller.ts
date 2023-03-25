@@ -68,7 +68,9 @@ const getSchedule =
       const nextUp = eventQueue.pop();
       if (nextUp?.base?.doneScheduling || nextUp!!.startDateTime > endPoint) {
         continue;
-      } 
+      }
+
+      console.log("I'm calling from fixed date")
       const conflict:Event|null = await wouldConflict(client, nextUp!!.startDateTime, nextUp!!.endDateTime)
       if (conflict) {
         conflicts.push({a:nextUp, b:conflict})
@@ -158,6 +160,7 @@ const getSchedule =
       }
       var instanceEndTime=new Date(mySchedulePointer.valueOf())
       instanceEndTime.setMinutes(instanceEndTime.getMinutes() + currentEvent!!.blockSize);
+      console.log("I'm calling from due date")
       const conflict = await wouldConflict(client, mySchedulePointer, instanceEndTime)
       if (conflict && mySchedulePointer < conflict.start) {
         instanceEndTime = conflict.start;
@@ -240,6 +243,7 @@ const getSchedule =
 
       const endTime = new Date(unscheduledSchedulePointer.valueOf())
       endTime.setMinutes(endTime.getMinutes() + currentUnscheduledEvent!!.base!!.duration);
+      console.log("I'm calling from unscheduled")
       const conflict : Event | null = await wouldConflict(client, unscheduledSchedulePointer, endTime)
 
       if (conflict) {
@@ -285,6 +289,8 @@ const getSchedule =
   };
 
 const wouldConflict = async (client:PrismaClient, start:Date, end:Date):Promise<Event|null> => {
+  console.log(start);
+  console.log(end);
   const conflict = await client.event.findFirst({
     where : {
       OR: [

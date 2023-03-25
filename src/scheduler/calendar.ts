@@ -1,7 +1,7 @@
-import { ical } from "ical-generator";
-import { http } from "http";
+import ical from "ical-generator";
+import http from "http";
 import { RequestHandler } from "express";
-import { Event } from "@prisma/client";
+import { Event, EventSchedulerBase } from "@prisma/client";
 
 // get events from User
 // take two parameters, one list of events to be scheduled, list of evenets ot be deleted
