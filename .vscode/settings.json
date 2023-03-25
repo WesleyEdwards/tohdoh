@@ -1,5 +1,13 @@
 {
     "cSpell.words": [
         "Tohdoh"
+    ],
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "backend",
+            "database": "${workspaceFolder:hackathon2023}/prisma/dev.db"
+        }
     ]
 }

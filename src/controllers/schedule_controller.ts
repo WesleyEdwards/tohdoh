@@ -266,8 +266,8 @@ const getSchedule =
         data: {
           start: unscheduledSchedulePointer,
           end: endTime,
-          userId: currentEvent!!.userId,
-          schedulerId: currentEvent!!.id,
+          userId: currentUnscheduledEvent!!.userId,
+          schedulerId: currentUnscheduledEvent!!.id,
           kind: "FLEXIBLE_TIME",
           complete: false,
           deleted: false
@@ -280,7 +280,7 @@ const getSchedule =
       newEvents.push(newEvent);
 
       unscheduledEventSchedulers = [...unscheduledEventSchedulers, ...tempEvents];
-      currentEvent?.base.lastScheduled.setTime(unscheduledSchedulePointer.getTime());
+      currentUnscheduledEvent?.base.lastScheduled.setTime(unscheduledSchedulePointer.getTime());
       unscheduledSchedulePointer.setTime(newEvent.end.getTime());
     }
 
@@ -290,7 +290,7 @@ const getSchedule =
       "Content-type": "text/calendar",
     });
     
-    res.send(generateICal(newEvents, deletedEvents));
+    res.json({blob:generateICal(newEvents, deletedEvents)});
   };
 
 const wouldConflict = async (client:PrismaClient, start:Date, end:Date):Promise<Event|null> => {
@@ -335,7 +335,7 @@ const getEvents =
         scheduler: true,
       },
     });
-    res.json({"blob":events});
+    res.json({events});
   };
 
 export const scheduleController = build_controller("schedules", [

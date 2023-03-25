@@ -35,7 +35,7 @@ export const generateICal = (eventsWithBase: eventWithBase[], deletedEventsWithB
     const today = new Date()
     const weekOfEvents = getWeekOfEvents(eventsWithBase, deletedEventsWithBase)
     const calendar = ical({name: today.toString() + '-calendar'})
-    weekOfEvents.forEach((event) => {
+    eventsWithBase.forEach((event) => {
         calendar.createEvent({
             id: event.id,
             start: event.start,
