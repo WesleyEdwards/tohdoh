@@ -1,22 +1,23 @@
 import { ical } from "ical-generator";
 import { http } from "http";
 import { RequestHandler } from "express";
+import { Event } from "@prisma/client";
 
 // get events from User
 // take two parameters, one list of events to be scheduled, list of evenets ot be deleted
 
 
-type eventWithBase = Event & {
+export type eventWithBase = Event & {
     scheduler: EventSchedulerBase;
 }
 
-const isDeleted = (eventId: Number, deletedEvents: Event[]) => {
+const isDeleted = (eventId: Number, deletedEvents: eventWithBase[]) => {
     return deletedEvents.some(e => e.id === eventId)
 }
 
 const getWeekOfEvents = (eventsWithBase: eventWithBase[], deletedEventsWithBase: eventWithBase[]) => {
     // get events from today
-    let weekOfEvents: Event[] = [];
+    let weekOfEvents: eventWithBase[] = [];
     eventsWithBase.forEach((event) => {
         let currentDateTime = new Date()
         // check if event is from the past
@@ -30,7 +31,7 @@ const getWeekOfEvents = (eventsWithBase: eventWithBase[], deletedEventsWithBase:
     return weekOfEvents;
 }
 
-const generateICal = (eventsWithBase: eventWithBase[], deletedEventsWithBase: eventWithBase[]) => {
+export const generateICal = (eventsWithBase: eventWithBase[], deletedEventsWithBase: eventWithBase[]) => {
     const today = new Date()
     const weekOfEvents = getWeekOfEvents(eventsWithBase, deletedEventsWithBase)
     const calendar = ical({name: today.toString() + '-calendar'})
