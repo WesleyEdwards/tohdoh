@@ -6,7 +6,7 @@ type Method = "get" | "post" | "put" | "delete";
 
 export class Api {
   private token = "";
-  private baseUrl = "http://localhost:3000";
+  private baseUrl = "http://localhost:8000/api";
 
   constructor() {
     const token = getToken();
@@ -58,20 +58,20 @@ export class Api {
   }
 
   createAccount(body: CreateUserBody): Promise<User> {
-    return this.post("user", body).then((res) => {
+    return this.post("users", body).then((res) => {
       this.setToken(res.token);
       return res.user;
     });
   }
 
   signIn(body: LoginBody): Promise<User> {
-    return this.post("user/login", body).then((res) => {
+    return this.post("token", body).then((res) => {
       this.setToken(res.token);
       return res.user;
     });
   }
   getUser(): Promise<User | null> {
-    return this.get("user").then((res) => {
+    return this.get("users").then((res) => {
       if (!res?.user) return null;
       this.setToken(res.token);
       return res.user;
